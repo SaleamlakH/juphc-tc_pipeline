@@ -9,6 +9,8 @@ spec:
   params:
     - name: build-image
     - name: repo-url
+    - name: app-name
+      default: tax-calcu
     - name: branch
       default: main
   tasks:  
@@ -53,17 +55,17 @@ spec:
         - npminstall
     
     - name: build
-      workspace:
+      workspaces:
         - name: source
           workspace: pipeline-workspace
         - name: dockerconfig
           workspace: dockerconfig-ws
       taskRef:
-        name: IMAGE
-        kind: "us.icr.io/$(context.pipelineRun.namespace)/$(params.app-name)"
-      params:
-        name: build-image
-        value: "$(params.build-image)"
+        name: buildah
+        kind: ClusterTask
+      params: 
+        - name: IMAGE
+          value: "us.icr.io/$(context.pipelineRun.namespace)/$(params.app-name)"
       runAfter:
         - tests
        
