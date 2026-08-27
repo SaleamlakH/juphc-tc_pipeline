@@ -11,8 +11,7 @@ spec:
     - name: repo-url
     - name: branch
       default: main
-  tasks:
-  
+  tasks:  
     - name: init
       workspaces:
         - name: source
@@ -34,3 +33,37 @@ spec:
         value: $(params.branch)
       runAfter:
         - init
+    
+    - name: npminstall
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+      taskRef:
+        name: npm
+      runAfter:
+        - clone
+    
+    - name: tests
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+      taskRef:
+        name: jasmine
+      runAfter:
+        - npminstall
+    
+    - name: build
+      workspace:
+        - name: source
+          workspace: pipeline-workspace
+        - name: dockerconfig
+          workspace: dockerconfig-ws
+      taskRef:
+        name: IMAGE
+        kind: "us.icr.io/$(context.pipelineRun.namespace)/$(params.app-name)"
+      params:
+        name: build-image
+        value: "$(params.build-image)"
+      runAfter:
+        - tests
+       
